@@ -1,17 +1,19 @@
 import { postData } from './fetch-request.js';
-import { resetMap, resetAddress } from './map.js';
-import { avatarReset, resetImage } from './photos.js';
-
-const adForm = document.querySelector('.ad-form');
-const resetButton = document.querySelector('.ad-form__reset');
-const priceSlider = adForm.querySelector('.ad-form__slider');
-const mapFilters = document.querySelector('.map__filters');
+import { resetMap } from './map.js';
+import { resetAvatar, resetImage} from './photos.js';
 
 const MAX_ROOMS = 100;
 const MIN_LENGTH_TITLE = 30;
 const MAX_LENGTH_TITLE = 100;
 const MIN_PRICE = 0;
 const MAX_PRICE = 100000;
+const COORDINATES = '35.68612, 139.75352';
+
+const adForm = document.querySelector('.ad-form');
+const resetButton = document.querySelector('.ad-form__reset');
+const priceSlider = adForm.querySelector('.ad-form__slider');
+const mapFilters = document.querySelector('.map__filters');
+const coordinatesField = document.querySelector('#address');
 
 const TYPES_MIN_PRICE = {
   bungalow: 0,
@@ -44,7 +46,7 @@ const validatePriceMax = (max) => {
   return max;
 };
 
-const validateForm = (form) => {
+const validateForm = (form, callback) => {
   const capacityField = form.querySelector('#capacity');
   const roomsField = form.querySelector('#room_number');
   const titleField = form.querySelector('#title');
@@ -105,7 +107,7 @@ const validateForm = (form) => {
 
     if (isValid) {
       const formData = new FormData(evt.target);
-      postData(formData);
+      postData(formData, callback);
     }
   });
 
@@ -141,18 +143,20 @@ const validateForm = (form) => {
   });
 };
 
-const resetForm = () => {
+const resetForm = (callback) => () => {
   adForm.reset();
   mapFilters.reset();
   priceSlider.noUiSlider.reset();
   resetMap();
-  resetAddress();
-  avatarReset();
+  coordinatesField.setAttribute('value', COORDINATES);
+  resetAvatar();
   resetImage();
+  callback();
 };
 
-resetButton.addEventListener('click', resetForm);
+const initForm = (callback) => {
+  resetButton.addEventListener('click', resetForm(callback));
+  validateForm(adForm, resetForm(callback));
+};
 
-validateForm(adForm);
-
-export {resetForm};
+export {initForm};
